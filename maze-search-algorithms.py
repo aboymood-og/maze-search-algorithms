@@ -36,6 +36,8 @@ def find_frontiers(agent):
       posible_frontiers.pop(i)
     else: #en caso de que no cumpla ninguna condicion anterior, es valida para ser frontera por lo que se mantiene y aumenta la iteración para seguir con el siguiente elemento de la lista "posible_frontiers"
       i += 1
+  for i in range(len(posible_frontiers)): #una vez tenemos la lista de fronteras se guardan en el diccionario, guardando la frontera -> nodo padre (agente en este caso)
+      shortest_path[posible_frontiers[i]] = agent
   return posible_frontiers #una vez se verifican las 4 posibles fronteras y no tenemos lista vacia, retorna la lista con las fronteras definitivas para el agente
 
 #funcion para imprimir el laberinto en pantalla
@@ -57,6 +59,33 @@ def choose_algorithm():
       return alg
     else:
       print("Debe elegir entre [1,2]. Intentar denuevo.\n")
+
+#funcion para buscar el camino mas corto usando diccionarios
+def find_shortest_path(shortest_path):
+  path_shorter = []
+  vecino = goal
+  while vecino != start:
+    path_shorter.append(vecino)
+    vecino = shortest_path[vecino]
+  path_shorter.append(start)
+  path_shorter = path_shorter[::-1]
+  return path_shorter
+
+#funcion que dibuja el laberito con el camino mas corto
+def draw_shortest_path(maze, sp):
+  for col in range(len(maze)): #Se recorre todo el laberinto buscando "s" y "g"
+    for row in range(len(maze[col])): 
+      if (col,row) in sp:
+        maze[col][row] = "s"
+  return maze
+
+#funcion para aplicar manhatann
+def manhatann():
+  pass #que carajos que mierda
+
+
+
+
 #--------------------------- FUNCIONES ---------------------------# 
 
 #---------------------- PROGRAMA PRINCIPAL -----------------------# 
@@ -67,6 +96,9 @@ maze = [["X"," "," "," ","X","X","X","X"],  # X = paredes/limites3
         ["X","X","X"," ","X","X","g","X"]]
 
 start, goal = find_start_goal(maze) #busca "s" y "g" en el laberinto usando la funcion previamente descrita y los guarda en variables con dichos nombres
+shortest_path = {
+  "start": start,
+} #se inicializa un dicionario donde se guardara el como se mueve el agente dentro del laberinto, de esta forma se logra guardar el parent de cada node
 print("El laberinto a buscar una salida:\n") #imprime por pantalla un mensaje de inicio
 print_maze(maze) #dibuja el laberinto en terminal
 print("") #solo un salto de linea xd
@@ -81,29 +113,32 @@ if start != None and goal != None: #verifica que luego de ejecutar el "find_star
   frontier.append(start) #se agrega a la frontera el punto de partida ya que es como si el algoritmo comenzara desde un agente que solo tiene esta frontera
   explored_set = [] #se inicializa una lista que almacena las coordenadas por las cuales el agente ya pasó
   agent = None #se inicializa el agente, el cual como comienza fuera del laberinto y solo tiene de frontera al punto de inicio queda como None
-  cont = 0 #contador arbitrario para el while y saber cuantas iteraciones se han echo
+#  cont = 0 #contador arbitrario para el while y saber cuantas iteraciones se han echo
   while agent != goal: #el while tiene como condición que el agente no este en la meta, si esta en la meta sale del while
-    print("\nIteración ", cont)
-    cont +=1 
+#    print("\nIteración ", cont)
+#    cont +=1 
     if agent != None: #verifica que el agente no sea None, es decir, que aun el algoritmo no empiece como tal, si este es diferente de none lo agregará al explored set.
       explored_set.append(agent)
-    print("explored_set: ", explored_set)
+#    print("explored_set: ", explored_set)
     #Si la frontera es vacía, entonces no hay solución
     if len(frontier) == 0: #verifica si el tamaño de la frontera en algun momento es 0, si es 0 el laberinto no tiene solución.
       print("\nNo hay solución para este laberinto.")
       break
     agent = frontier.pop(alg) #aca borra un nodo de la frontera en base a la decisión tomada, si se usa bfs toma 0 por lo que es una cola, si usa dfs toma -1 por lo que usa pila.
-    print("Agente:", agent)
+#    print("Agente:", agent)
      
     frontier += find_frontiers(agent) #agrega las fronteras encontradas para el agente usando "find_frontiers" a la lista de fronteras totales, actuando como pila o cola dependiendo.
-    print("frontier: ", frontier)
+#    print("frontier: ", frontier)
 
   if agent == goal:
     print("\n¡Meta alcanzada!")
-    print("Laberinto con la solución: ") #me falta programar esto pero para ello necesio algo mas importante que es la siguiente lines
-    print("Solución lograda con el algoritmo elegído: ") #me falta implementar esto, de tal forma que en alguna lista supongo se almacene el camino correcto para llegar de "s" a "g", ya que de momento solo me esta guardando el explored set pero esto no es una solución como tal.
-    print("Nodos explorados para llegar a la solución: ", explored_set)
-      
+    sp = find_shortest_path(shortest_path)
+    print("Camino mas corto con el algoritmo elegído: ", sp) 
+    new_maze = draw_shortest_path(maze, sp)
+    print("\nLaberinto con la solución:")
+    print_maze(new_maze) 
+    print("\nNodos explorados para llegar a la solución: ", explored_set)
+    
 elif start == None or goal == None: #verifica que luego de ejecutar el "find_start_goal" se hayan obtenido none, si es así imprime un error por pantalla y termina el programa
   print("El laberinto debe contener 's' (inicio) y 'g' (meta).")
 
