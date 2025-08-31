@@ -48,7 +48,7 @@ def print_maze(maze):
 #funcion para elegir algoritmo de busqueda
 def choose_algorithm():    
   while True:
-    aux = input("Eliga que algoritmo usar: \n (1): BFS (cola) \n (2): DFS (pila)\n\nEscriba 1 o 2:")
+    aux = input("Eliga que algoritmo usar: \n (1): BFS (cola) \n (2): DFS (pila) \n (3): Greddy Best First with Manhattan Heuristic \n\nEscriba 1, 2 o 3:")
     if aux == "1":
       print("\nSolución con BFS:")
       alg = 0
@@ -57,8 +57,12 @@ def choose_algorithm():
       print("\nSolución con DFS:")
       alg = -1
       return alg
+    elif aux == "3":
+      print("\nSolución con Greddy Best First with Manhattan Heuristic")
+      alg = 3
+      return alg
     else:
-      print("Debe elegir entre [1,2]. Intentar denuevo.\n")
+      print("Debe elegir entre [1,2,3]. Intentar denuevo.\n")
 
 #funcion para buscar el camino mas corto usando diccionarios
 def find_shortest_path(shortest_path):
@@ -75,25 +79,49 @@ def find_shortest_path(shortest_path):
 def draw_shortest_path(maze, sp):
   for col in range(len(maze)): #Se recorre todo el laberinto buscando "s" y "g"
     for row in range(len(maze[col])): 
-      if (col,row) in sp:
-        maze[col][row] = "s"
+      if (col,row) in sp and maze[col][row] != "s" and maze[col][row] != "g":
+        maze[col][row] = "·"
   return maze
 
 #funcion para aplicar manhatann
-def manhatann():
-  pass #que carajos que mierda
+def manhatann(frontier):
+  frontier2 = frontier.copy()
+  for f in range(len(frontier2)):
+    d = abs(frontier2[f][0]-goal[0]) + abs(frontier2[f][1]-goal[1])
+    frontier2[f] = d
+  #print("agentemanhattan:", agent)
+  #print("frontiermanhatan:", frontier)
+  #print("frontier2manhata:", frontier2)
+  #print("minfrontier:", frontier2.index(min(frontier2)))
 
-
-
+  alg = frontier2.index(min(frontier2))
+  return alg
 
 #--------------------------- FUNCIONES ---------------------------# 
 
 #---------------------- PROGRAMA PRINCIPAL -----------------------# 
 #inicializar laberinto
-maze = [["X"," "," "," ","X","X","X","X"],  # X = paredes/limites3
-        ["X"," ","X"," "," "," ","X","X"],  # s = punto de inicio
-        ["X","s","X"," ","X"," "," "," "],  # g = punto de meta
-        ["X","X","X"," ","X","X","g","X"]]
+#maze = [["X"," "," "," ","X","X","X","X"],  # X = paredes/limites3
+#        ["X"," ","X"," "," "," ","X","X"],  # s = punto de inicio
+#        ["X","s","X"," ","X"," "," ","g"],  # g = punto de meta
+#        ["X","X","X"," "," "," ","X","X"]]
+  
+maze = [
+  ["X","X","X","X","X","X","X","X","X","X","X","X","X","X"],
+  ["X","s"," "," "," "," "," "," "," ","X"," "," "," ","X"],
+  ["X"," ","X"," ","X"," ","X","X"," ","X"," ","X"," ","X"],
+  ["X"," ","X"," ","X"," "," ","X"," "," "," ","X"," ","X"],
+  ["X"," ","X","X","X","X"," ","X","X","X"," ","X"," ","X"],
+  ["X"," "," "," "," ","X"," "," "," ","X"," "," "," ","X"],
+  ["X","X","X","X"," ","X","X","X"," ","X","X","X"," ","X"],
+  ["X"," "," "," "," "," "," ","X"," "," "," "," "," ","X"],
+  ["X"," ","X","X","X","X","X","X","X","X","X","X"," ","X"],
+  ["X"," "," "," "," "," "," "," "," "," "," "," ","g","X"],
+  ["X","X","X","X","X","X","X","X","X","X","X","X","X","X"]
+]
+
+
+
 
 start, goal = find_start_goal(maze) #busca "s" y "g" en el laberinto usando la funcion previamente descrita y los guarda en variables con dichos nombres
 shortest_path = {
@@ -106,14 +134,14 @@ print("") #solo un salto de linea xd
 if start != None and goal != None: #verifica que luego de ejecutar el "find_start_goal" se hayan obtenido dichos valores y no queden vacios
 
   print("Punto de inicio:", start, "\nPunto de meta: \t", goal, "\n") #imprime por pantalla el "s" y "g" identificado usando find_start_goal 
-  alg = choose_algorithm() #ejecuta funcion para elegir si usar dfs o bfs
+  alg = choose_algorithm() #ejecuta funcion para elegir si usar dfs o bfs o mantahann
 
   #ALGORITMO DE BUSQUEDA 
   frontier = [] #se inicializa la frontera 
   frontier.append(start) #se agrega a la frontera el punto de partida ya que es como si el algoritmo comenzara desde un agente que solo tiene esta frontera
   explored_set = [] #se inicializa una lista que almacena las coordenadas por las cuales el agente ya pasó
   agent = None #se inicializa el agente, el cual como comienza fuera del laberinto y solo tiene de frontera al punto de inicio queda como None
-#  cont = 0 #contador arbitrario para el while y saber cuantas iteraciones se han echo
+#  cont = 0 #contador arbitrario para el whi  le y saber cuantas iteraciones se han echo
   while agent != goal: #el while tiene como condición que el agente no este en la meta, si esta en la meta sale del while
 #    print("\nIteración ", cont)
 #    cont +=1 
@@ -124,7 +152,12 @@ if start != None and goal != None: #verifica que luego de ejecutar el "find_star
     if len(frontier) == 0: #verifica si el tamaño de la frontera en algun momento es 0, si es 0 el laberinto no tiene solución.
       print("\nNo hay solución para este laberinto.")
       break
-    agent = frontier.pop(alg) #aca borra un nodo de la frontera en base a la decisión tomada, si se usa bfs toma 0 por lo que es una cola, si usa dfs toma -1 por lo que usa pila.
+    if alg == 0 or alg == -1:
+      agent = frontier.pop(alg) #aca borra un nodo de la frontera en base a la decisión tomada, si se usa bfs toma 0 por lo que es una cola, si usa dfs toma -1 por lo que usa pila.
+    elif alg == 3:
+      k = manhatann(frontier)
+      agent = frontier.pop(k)
+      
 #    print("Agente:", agent)
      
     frontier += find_frontiers(agent) #agrega las fronteras encontradas para el agente usando "find_frontiers" a la lista de fronteras totales, actuando como pila o cola dependiendo.
