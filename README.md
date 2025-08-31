@@ -30,7 +30,7 @@ The maze is represented as a 2D grid, where:
 
 Run the program with Python:
 
-python search_problems.py
+python maze-search-algorithms.py
 
 
 You will be prompted to choose an algorithm:
@@ -72,5 +72,6 @@ X X X X X
 
 
 Shortest path found:
+
 
 [(1,1), (1,2), (1,3), (2,3), (2,4)]
